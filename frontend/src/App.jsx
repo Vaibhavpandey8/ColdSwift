@@ -197,18 +197,10 @@ export default function App() {
         justifyContent: 'space-between', 
         alignItems: 'center', 
         marginBottom: '35px', 
-        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-        paddingBottom: '20px',
+        paddingBottom: '10px',
         flexWrap: 'wrap',
         gap: '20px',
-        textAlign: 'left',
-        position: 'sticky',
-        top: 0,
-        background: 'rgba(15, 23, 42, 0.85)', // Glassmorphic dark slate background
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        zIndex: 1000,
-        paddingTop: '20px'
+        textAlign: 'left'
       }}>
         {/* Left corner: Modern SaaS Brand Logo */}
         <div className="brand-logo-btn" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '10px' }} onClick={() => setActiveView('home')}>
