@@ -7,14 +7,14 @@ node_modules/
 dist/
 frontend/dist/
 
-# Local environment files (contains SMTP keys/passwords)
+# Local environment files 
 .env
 backend/.env
 
 # Local campaign files (PDF uploads & parsed contacts database)
-backend/hr_contacts.json
-backend/hr_list.pdf
-backend/resume.pdf
+# backend/hr_contacts.json
+# backend/hr_list.pdf
+# backend/resume.pdf
 
 # IDE and System files
 .idea/
