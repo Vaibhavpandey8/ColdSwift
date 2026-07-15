@@ -2,6 +2,9 @@
 
 **ColdSwift** is a premium, full-stack recruitment outreach platform designed to streamline and automate job application cold emailing to HR coordinators. It extracts recruiter lists from unstructured PDFs, runs domain checks to prevent bounce-backs, and dispatches personalized emails with staggered rate-limiting to bypass spam filters.
 
+![Uploading image.png…]()
+
+
 ---
 
 ## 🚀 Core Features
