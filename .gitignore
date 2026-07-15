@@ -1,0 +1,25 @@
+# Dependency directories
+**/node_modules/
+node_modules/
+
+# Production builds
+**/dist/
+dist/
+frontend/dist/
+
+# Local environment files (contains SMTP keys/passwords)
+.env
+backend/.env
+
+# Local campaign files (PDF uploads & parsed contacts database)
+backend/hr_contacts.json
+backend/hr_list.pdf
+backend/resume.pdf
+
+# IDE and System files
+.idea/
+.vscode/
+.DS_Store
+*.suo
+*.sln
+*.swp
