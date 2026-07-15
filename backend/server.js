@@ -23,9 +23,42 @@ app.use(express.urlencoded({ limit: '15mb', extended: true }));
 // Serve static frontend files from build directory
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-// API Status check
-app.get('/api/status', (req, res) => {
-  res.json({ status: 'ok', message: 'Backend server is running smoothly.' });
+// API Status check with SMTP connection diagnostics
+app.get('/api/status', async (req, res) => {
+  const host = process.env.SMTP_HOST;
+  const port = parseInt(process.env.SMTP_PORT || '587');
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!host || !user || !pass) {
+    return res.json({ 
+      status: 'error', 
+      smtp: 'unconfigured', 
+      message: 'SMTP credentials are missing in Render environment variables.' 
+    });
+  }
+
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass }
+  });
+
+  try {
+    await transporter.verify();
+    res.json({ 
+      status: 'ok', 
+      smtp: 'connected', 
+      message: 'Backend server is running smoothly and SMTP is connected!' 
+    });
+  } catch (error) {
+    res.json({ 
+      status: 'error', 
+      smtp: 'failed', 
+      message: 'Backend server is active, but SMTP connection failed: ' + error.message 
+    });
+  }
 });
 
 // Campaign Endpoint: Get status of files and sending progression
