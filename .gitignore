@@ -11,10 +11,6 @@ frontend/dist/
 .env
 backend/.env
 
-# Local campaign files (PDF uploads & parsed contacts database)
-# backend/hr_contacts.json
-# backend/hr_list.pdf
-# backend/resume.pdf
 
 # IDE and System files
 .idea/
