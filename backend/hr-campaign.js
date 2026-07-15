@@ -18,12 +18,10 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 async function verifyEmailDomain(email) {
   if (!email || !email.includes('@')) return false;
   const domain = email.split('@')[1];
-  try {
-    const result = await dns.lookup(domain);
-    return !!result.address;
-  } catch (error) {
-    return false;
-  }
+  // Fast regex validation for the domain name instead of a blocking network query.
+  // This prevents local DNS resolver timeouts and prevents the campaign loop from freezing.
+  const domainRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return domainRegex.test(domain);
 }
 
 /**
