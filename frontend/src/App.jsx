@@ -315,6 +315,9 @@ export default function App() {
             Campaign Progress
           </button>
         </div>
+        <p className="app-subtitle" style={{ width: '100%', marginTop: '15px', color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '10px' }}>
+          Upload your HR Contacts PDF, attach your resume, and write a custom cold email to launch a bulk recruiting outreach.
+        </p>
       </header>
 
       {/* Centered Workspace Container */}
