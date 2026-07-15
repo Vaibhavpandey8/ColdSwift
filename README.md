@@ -49,24 +49,7 @@ ColdSwift/
 
 ## 💻 Local Setup Guide
 
-### 1. Clone & Install Dependencies
-Clone the repository, then install packages for both frontend and backend.
-
-```bash
-# Clone the repository
-git clone https://github.com/Vaibhavpandey8/ColdSwift.git
-cd ColdSwift
-
-# Install backend dependencies
-cd backend
-npm install
-
-# Install frontend dependencies
-cd ../frontend
-npm install
-```
-
-### 2. Configure Backend Credentials
+### 1. Configure Backend Credentials
 Create a `.env` file in the `backend` folder:
 
 ```env
@@ -78,7 +61,7 @@ SMTP_PASS=your_app_password
 SENDER_EMAIL=your_email@gmail.com
 ```
 
-### 3. Run Development Servers
+### 2. Run Development Servers
 Start both servers locally:
 
 ```bash
