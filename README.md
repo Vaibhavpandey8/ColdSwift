@@ -1,5 +1,7 @@
 # ⚡ ColdSwift — Automated HR Recruiter Campaign Engine
 
+![ColdSwift Banner](frontend/public/hero.png)
+
 **ColdSwift** is a premium, full-stack recruitment outreach platform designed to streamline and automate job application cold emailing to HR coordinators. It extracts recruiter lists from unstructured PDFs, runs domain checks to prevent bounce-backs, and dispatches personalized emails with staggered rate-limiting to bypass spam filters.
 
 ![Uploading image.png…]()
@@ -19,41 +21,25 @@
 
 ---
 
-## 🛠️ Technology Stack
-
-* **Frontend**: React (Vite), Vanilla CSS (Custom HSL theme tokens, Glassmorphism, Micro-animations), Google Fonts (`Outfit`, `VT323`).
-* **Backend**: Node.js, Express, Nodemailer (SMTP mail dispatcher), DNS Promises API (MX validation), PDF-Parse (OCR extraction).
-* **Package Management**: Clean build configurations, with unused dependencies pruned (e.g. `@google/generative-ai` and `imapflow` completely removed for performance).
-
----
-
-## 📂 Project Architecture
-
-```text
-ColdSwift/
-├── backend/
-│   ├── email-template.js     # Professional styled HTML recruiter email template
-│   ├── hr-campaign.js        # Core logic: PDF parsing, domain checks, sending loops
-│   ├── server.js             # Express API endpoints & static serving fallback
-│   ├── package.json          # Node dependencies (express, nodemailer, pdf-parse)
-│   └── .env                  # Private SMTP keys & credentials
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx           # Main React Dashboard UI & state management
-│   │   ├── index.css         # Styling system, variables, page animations
-│   │   └── main.jsx          # React mount entry
-│   ├── dist/                 # Production compiled frontend bundle
-│   ├── package.json          # Vite dependencies
-│   └── vite.config.js        # Build configuration
-└── .gitignore                # Restricts nodes, builds, and sensitive files
-```
-
----
-
 ## 💻 Local Setup Guide
 
-### 1. Configure Backend Credentials
-Create a `.env` file in the `backend` folder:
+Follow these steps to run the application on your local machine:
+
+### 1. Install Dependencies
+Navigate into both frontend and backend directories and install the required npm packages:
+
+```bash
+# Install backend dependencies
+cd backend
+npm install
+
+# Install frontend dependencies
+cd ../frontend
+npm install
+```
+
+### 2. Configure Backend SMTP Credentials
+Create a file named `.env` in the `backend` folder and populate it with your email configurations:
 
 ```env
 PORT=5000
@@ -64,18 +50,17 @@ SMTP_PASS=your_app_password
 SENDER_EMAIL=your_email@gmail.com
 ```
 
-### 2. Run Development Servers
-Start both servers locally:
+### 3. Run Development Servers
+Launch the servers for both components:
 
 ```bash
-# In the backend directory
+# Start backend server (inside backend folder)
+cd backend
 npm run dev
 
-# In the frontend directory
+# Start frontend server (inside frontend folder)
+cd ../frontend
 npm run dev
 ```
 
-
-* **Framework**: `Vite`
-* **Environment Variable**: Add `VITE_API_BASE_URL` pointing to your live Render backend endpoint (e.g., `https://coldswift-backend.onrender.com/api`).
-* Vercel will build the React app and automatically query the live cloud API server.
+Open `http://localhost:5173` in your browser to start running recruiter campaigns locally!
