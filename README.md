@@ -71,24 +71,8 @@ npm run dev
 # In the frontend directory
 npm run dev
 ```
-Open `http://localhost:5173` in your browser.
 
----
 
-## ☁️ Cloud Deployment Configuration
-
-This project is fully structured for cloud deployments (e.g., Vercel/Netlify + Render/Railway).
-
-### 1. Backend Web Service (Render/Railway)
-* Connect your repo to **Render** as a **Web Service**.
-* **Root Directory**: `backend`
-* **Build Command**: `npm install`
-* **Start Command**: `npm start`
-* Configure Environment Variables: Add your `.env` values (SMTP credentials) in the Render env variables tab.
-
-### 2. Static Frontend (Vercel/Netlify)
-* Connect your repo to **Vercel** as a **Project**.
-* **Root Directory**: `frontend`
 * **Framework**: `Vite`
 * **Environment Variable**: Add `VITE_API_BASE_URL` pointing to your live Render backend endpoint (e.g., `https://coldswift-backend.onrender.com/api`).
 * Vercel will build the React app and automatically query the live cloud API server.
