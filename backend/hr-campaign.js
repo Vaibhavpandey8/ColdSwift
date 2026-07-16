@@ -3,7 +3,66 @@ const path = require('path');
 const dns = require('dns').promises;
 const { PDFParse } = require('pdf-parse');
 const nodemailer = require('nodemailer');
+const https = require('https');
 const { getCampaignEmail } = require('./email-template');
+
+function sendViaBrevoAPI(apiKey, fromEmail, toEmail, toName, subject, htmlContent, resumePath) {
+  return new Promise((resolve, reject) => {
+    const payload = {
+      sender: { name: 'Vaibhav Pandey', email: fromEmail },
+      to: [{ email: toEmail, name: toName }],
+      subject,
+      htmlContent
+    };
+
+    if (resumePath && fs.existsSync(resumePath)) {
+      payload.attachment = [{
+        name: 'Vaibhav_Pandey_Resume.pdf',
+        content: fs.readFileSync(resumePath).toString('base64')
+      }];
+    }
+
+    const data = JSON.stringify(payload);
+
+    const options = {
+      hostname: 'api.brevo.com',
+      port: 443,
+      path: '/v3/smtp/email',
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': apiKey,
+        'content-type': 'application/json',
+        'Content-Length': Buffer.byteLength(data)
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let responseBody = '';
+      res.on('data', (chunk) => responseBody += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(JSON.parse(responseBody));
+        } else {
+          try {
+            const err = JSON.parse(responseBody);
+            reject(new Error(err.message || `HTTP ${res.statusCode}`));
+          } catch (e) {
+            reject(new Error(`HTTP ${res.statusCode}: ${responseBody}`));
+          }
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      reject(e);
+    });
+
+    req.write(data);
+    req.end();
+  });
+}
+
 
 const CONTACTS_FILE = path.join(__dirname, 'hr_contacts.json');
 const PDF_FILE = path.join(__dirname, 'hr_list.pdf');
@@ -201,15 +260,20 @@ async function sendCampaignBatch(limit = 10, delayMs = 5000, smtpSettings) {
     throw new Error('SMTP Configurations are missing. Please complete SMTP settings.');
   }
 
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass }
-  });
+  const isBrevoAPI = pass && pass.startsWith('xkeysib');
+  let transporter = null;
 
-  // Verify transporter connectivity
-  await transporter.verify();
+  if (!isBrevoAPI) {
+    transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass }
+    });
+
+    // Verify transporter connectivity
+    await transporter.verify();
+  }
 
   // Check if Resume attachment exists
   const attachments = [];
@@ -248,14 +312,18 @@ async function sendCampaignBatch(limit = 10, delayMs = 5000, smtpSettings) {
     const { subject, html, text: textBody } = getCampaignEmail(contact.name, contact.company);
 
     try {
-      await transporter.sendMail({
-        from: `"Vaibhav Pandey" <${fromEmail}>`,
-        to: contact.email,
-        subject,
-        text: textBody,
-        html,
-        attachments
-      });
+      if (isBrevoAPI) {
+        await sendViaBrevoAPI(pass, fromEmail, contact.email, contact.name, subject, html, RESUME_FILE);
+      } else {
+        await transporter.sendMail({
+          from: `"Vaibhav Pandey" <${fromEmail}>`,
+          to: contact.email,
+          subject,
+          text: textBody,
+          html,
+          attachments
+        });
+      }
 
       contact.status = 'sent';
       contact.sentAt = new Date().toISOString();

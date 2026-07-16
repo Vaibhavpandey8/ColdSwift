@@ -4,6 +4,7 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 const {
   parseHRListPDF,
   sendCampaignBatch,
@@ -23,41 +24,108 @@ app.use(express.urlencoded({ limit: '15mb', extended: true }));
 // Serve static frontend files from build directory
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-// API Status check with SMTP connection diagnostics
+function verifyBrevoKey(apiKey) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'api.brevo.com',
+      port: 443,
+      path: '/v3/account',
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'api-key': apiKey
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', (chunk) => body += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(JSON.parse(body));
+        } else {
+          try {
+            const err = JSON.parse(body);
+            reject(new Error(err.message || `HTTP ${res.statusCode}`));
+          } catch (e) {
+            reject(new Error(`HTTP ${res.statusCode}`));
+          }
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      reject(e);
+    });
+
+    req.end();
+  });
+}
+
+// API Status check with SMTP and HTTP API connection diagnostics
 app.get('/api/status', async (req, res) => {
   const host = process.env.SMTP_HOST;
   const port = parseInt(process.env.SMTP_PORT || '587');
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
-  if (!host || !user || !pass) {
+  if (!pass) {
     return res.json({ 
       status: 'error', 
       smtp: 'unconfigured', 
-      message: 'SMTP credentials are missing in Render environment variables.' 
+      message: 'SMTP credentials are missing in environment variables.' 
     });
   }
 
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass }
-  });
+  const isBrevoAPI = pass.startsWith('xkeysib');
 
-  try {
-    await transporter.verify();
-    res.json({ 
-      status: 'ok', 
-      smtp: 'connected', 
-      message: 'Backend server is running smoothly and SMTP is connected!' 
+  if (isBrevoAPI) {
+    // Verify Brevo API Key via HTTPS 443
+    try {
+      await verifyBrevoKey(pass);
+      res.json({ 
+        status: 'ok', 
+        smtp: 'connected', 
+        message: 'Backend server is running smoothly and Brevo REST API is connected!' 
+      });
+    } catch (error) {
+      res.json({ 
+        status: 'error', 
+        smtp: 'failed', 
+        message: 'Backend server is active, but Brevo API validation failed: ' + error.message 
+      });
+    }
+  } else {
+    // Standard SMTP verification
+    if (!host || !user) {
+      return res.json({ 
+        status: 'error', 
+        smtp: 'unconfigured', 
+        message: 'SMTP Host/User is missing in environment variables.' 
+      });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass }
     });
-  } catch (error) {
-    res.json({ 
-      status: 'error', 
-      smtp: 'failed', 
-      message: 'Backend server is active, but SMTP connection failed: ' + error.message 
-    });
+
+    try {
+      await transporter.verify();
+      res.json({ 
+        status: 'ok', 
+        smtp: 'connected', 
+        message: 'Backend server is running smoothly and SMTP is connected!' 
+      });
+    } catch (error) {
+      res.json({ 
+        status: 'error', 
+        smtp: 'failed', 
+        message: 'Backend server is active, but SMTP connection failed: ' + error.message 
+      });
+    }
   }
 });
 
