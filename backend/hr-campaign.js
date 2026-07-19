@@ -156,6 +156,23 @@ async function parseHRListPDF() {
     throw new Error('hr_list.pdf not found. Please upload or place hr_list.pdf in the backend directory.');
   }
 
+  // Load existing contacts to preserve status (e.g. 'sent', 'failed')
+  const existingContactsMap = new Map();
+  if (fs.existsSync(CONTACTS_FILE)) {
+    try {
+      const existingContacts = JSON.parse(fs.readFileSync(CONTACTS_FILE, 'utf8'));
+      if (Array.isArray(existingContacts)) {
+        for (const c of existingContacts) {
+          if (c.email) {
+            existingContactsMap.set(c.email.toLowerCase().trim(), c);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error loading existing contacts for status preservation:', e);
+    }
+  }
+
   const dataBuffer = fs.readFileSync(PDF_FILE);
   const pdfParser = new PDFParse({ data: dataBuffer });
   const pdfData = await pdfParser.getText();
@@ -187,15 +204,17 @@ async function parseHRListPDF() {
         // Company is usually after title
         const company = cols[emailIdx + 2] || 'Their Company';
 
+        const existing = existingContactsMap.get(email.toLowerCase().trim());
+
         contacts.push({
           id: idCounter++,
           name,
           email,
           company,
           title,
-          status: 'pending',
-          error: null,
-          sentAt: null
+          status: existing ? existing.status : 'pending',
+          error: existing ? existing.error : null,
+          sentAt: existing ? existing.sentAt : null
         });
       }
     } else {
@@ -212,15 +231,17 @@ async function parseHRListPDF() {
         const textAfter = line.slice(emailIndex + email.length).trim();
         const { title, company } = parseTitleAndCompany(textAfter, email);
 
+        const existing = existingContactsMap.get(email.toLowerCase().trim());
+
         contacts.push({
           id: idCounter++,
           name,
           email,
           company,
           title,
-          status: 'pending',
-          error: null,
-          sentAt: null
+          status: existing ? existing.status : 'pending',
+          error: existing ? existing.error : null,
+          sentAt: existing ? existing.sentAt : null
         });
       }
     }

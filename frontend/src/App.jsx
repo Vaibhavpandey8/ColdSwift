@@ -85,6 +85,13 @@ export default function App() {
   };
 
   const handleParsePDF = async () => {
+    if (campaignStatus.stats.total > 0) {
+      const confirmParse = window.confirm(
+        "Warning: You already have parsed contacts. Parsing again will refresh the list. We will preserve the 'sent' status of previously emailed contacts, but new/changed contacts will be added as 'pending'. Proceed?"
+      );
+      if (!confirmParse) return;
+    }
+
     setCampaignLogs(prev => ['[System] Parsing hr_list.pdf... Please wait.', ...prev]);
     try {
       const response = await fetch(`${API_BASE_URL}/campaign/parse`, { method: 'POST' });
